@@ -6,5 +6,5 @@ cd firstfly
 incus admin init --auto
 packer init .
 packer build homebrew.pkr.hcl
-time bash -e test.sh
+packer build homebrew2.pkr.hcl
 ```
