@@ -7,50 +7,82 @@ packer {
   }
 }
 
-source "incus" "focal" {
-  image      = "images:ubuntu/focal"
-  image_name = "homebrew-focal"
-  reuse      = true
+source "incus" "jammy" {
+  image        = "images:ubuntu/jammy"
+  output_image = "homebrew-jammy-slow"
+  reuse        = true
 }
 
-source "incus" "jammy" {
-  image      = "images:ubuntu/jammy"
-  image_name = "homebrew-jammy"
-  reuse      = true
+source "incus" "fast-jammy" {
+  image        = "homebrew-jammy-slow"
+  output_image = "homebrew-jammy-fast"
+  reuse        = true
+}
+
+source "incus" "focal" {
+  image        = "images:ubuntu/focal"
+  output_image = "homebrew-focal-slow"
+  reuse        = true
+}
+
+source "incus" "fast-focal" {
+  image        = "homebrew-focal-slow"
+  output_image = "homebrew-focal-fast"
+  reuse        = true
 }
 
 build {
-  sources = ["incus.focal", "incus.jammy"]
+  name = "slow"
+  sources = ["incus.jammy"]
 
   provisioner "shell" {
     scripts = [
       "slow.sh",
     ]
   }
+}
 
-  post-processor "incus" {
-    only        = ["incus.focal"]
-    input_image = "homebrew-focal"
-    image_name  = "homebrew-focal-tested"
+build {
+  name = "fast"
+  sources = ["source.incus.jammy"]
 
-    provisioner "shell" {
-      scripts = [
-        "fast.sh",
-        "test2.sh",
-      ]
-    }
+  provisioner "shell" {
+    scripts = [
+      "fast.sh",
+    ]
   }
 
-  post-processor "incus" {
-    only        = ["incus.jammy"]
-    input_image = "homebrew-jammy"
-    image_name  = "homebrew-jammy-tested"
+  provisioner "shell" {
+    scripts = [
+      "test.sh",
+    ]
+  }
+}
 
-    provisioner "shell" {
-      scripts = [
-        "fast.sh",
-        "test2.sh",
-      ]
-    }
+build {
+  name = "slow-focal"
+  sources = ["incus.focal"]
+
+  provisioner "shell" {
+    scripts = [
+      "slow.sh",
+    ]
+  }
+}
+
+build {
+  name = "fast-focal"
+  sources = ["source.incus.focal"]
+
+  provisioner "shell" {
+    scripts = [
+      "fast.sh",
+    ]
+  }
+
+  provisioner "shell" {
+    scripts = [
+      "test.sh",
+    ]
   }
 }
