@@ -2,4 +2,4 @@
 
 set -e
 
-apt-get install --assume-yes build-essential procps curl file git gcc
+apt-get install --assume-yes build-essential procps curl file git
