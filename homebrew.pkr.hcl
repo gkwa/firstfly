@@ -8,33 +8,49 @@ packer {
 }
 
 source "incus" "focal" {
-  image        = "images:ubuntu/focal"
-  output_image = "homebrew-focal"
-  reuse        = true
+  image      = "images:ubuntu/focal"
+  image_name = "homebrew-focal"
+  reuse      = true
 }
 
 source "incus" "jammy" {
-  image        = "images:ubuntu/jammy"
-  output_image = "homebrew-jammy"
-  reuse        = true
+  image      = "images:ubuntu/jammy"
+  image_name = "homebrew-jammy"
+  reuse      = true
 }
 
 build {
-  sources = ["incus.focal"]
+  sources = ["incus.focal", "incus.jammy"]
 
   provisioner "shell" {
     scripts = [
       "slow.sh",
     ]
   }
-}
 
-build {
-  sources = ["incus.jammy"]
+  post-processor "incus" {
+    only        = ["incus.focal"]
+    input_image = "homebrew-focal"
+    image_name  = "homebrew-focal-tested"
 
-  provisioner "shell" {
-    scripts = [
-      "slow.sh",
-    ]
+    provisioner "shell" {
+      scripts = [
+        "fast.sh",
+        "test2.sh",
+      ]
+    }
+  }
+
+  post-processor "incus" {
+    only        = ["incus.jammy"]
+    input_image = "homebrew-jammy"
+    image_name  = "homebrew-jammy-tested"
+
+    provisioner "shell" {
+      scripts = [
+        "fast.sh",
+        "test2.sh",
+      ]
+    }
   }
 }
